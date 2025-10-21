@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Apex Hub</title>
+  <link rel="stylesheet" href="style.css">
+  <script src="https://cdn.jsdelivr.net/npm/@fingerprintjs/fingerprintjs@3/dist/fp.min.js"></script>
+</head>
+<body>
+  <div class="particles"></div>
+
+  <div class="container">
+    <h1>Your key for Apex Hub (best script)</h1>
+    <div id="key" class="key-box">Wait...</div>
+    <div id="timer" class="timer-box">Validity period: --:--:--</div>
+    <button id="copyBtn" class="btn" disabled>Copy your key</button>
+  </div>
+
+  <div id="popup" style="display:none;">
+    <div id="popup-content">
+      <p>Ты не самый хитрый, пройди цепочку чтобы получить свой ключ</p>
+      <button id="goReferral">Go referral link</button>
+    </div>
+  </div>
+
+  <footer class="footer">
+    © 2025, by: Tw3ch1k_scripts in Render.com
+  </footer>
+
+  <script>
+    // Частицы
+    const particlesContainer = document.querySelector('.particles');
+    for(let i=0;i<30;i++){
+      const p=document.createElement('div');
+      const size=Math.random()*6+4;
+      p.classList.add('particle');
+      p.style.width=`${size}px`;
+      p.style.height=`${size}px`;
+      p.style.left=`${Math.random()*100}%`;
+      p.style.animationDuration=`${10+Math.random()*10}s`;
+      p.style.animationDelay=`${Math.random()*5}s`;
+      particlesContainer.appendChild(p);
+    }
+
+    // FingerprintJS + проверка ключа
+    async function checkUser() {
+      const fp = await FingerprintJS.load();
+      const result = await fp.get();
+      const hwid = result.visitorId;
+      const cookies = document.cookie;
+
+      const response = await fetch('/api/save_user', {
+        method:'POST',
+        headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({cookies, hwid})
+      });
+      return await response.json();
+    }
+
+    function startTimer(expireTime){
+      const timerEl=document.getElementById('timer');
+      function updateTimer(){
+        const now=new Date();
+        let diff = expireTime-now;
+        if(diff<=0){
+          timerEl.innerText="Срок действия ключа истёк";
+          clearInterval(interval);
+          return;
+        }
+        const hours=Math.floor(diff/1000/60/60);
+        const minutes=Math.floor((diff/1000/60)%60);
+        const seconds=Math.floor((diff/1000)%60);
+        timerEl.innerText=`Время действия: ${hours.toString().padStart(2,'0')}:${minutes.toString().padStart(2,'0')}:${seconds.toString().padStart(2,'0')}`;
+      }
+      updateTimer();
+      const interval=setInterval(updateTimer,1000);
+    }
+
+    async function displayKey(){
+      const res = await checkUser();
+      const keyBox = document.getElementById('key');
+      const copyBtn = document.getElementById('copyBtn');
+      const popup = document.getElementById('popup');
+      const goReferral = document.getElementById('goReferral');
+
+      const allowedReferrer = "https://lootdest.org/s?WSs4Ll3G&data=hXHoIYLoVaaSF3KyHWRw9WYwNPpnxgRmSwQZ5/m9J12x8yLQvYBBioH3Ajyld/Md";
+      const ref = document.referrer || "";
+
+      if(res.status === 'exists' || res.status === 'saved'){
+        // Пользователь уже имеет ключ → показываем
+        keyBox.innerText = res.key;
+        const registeredAt = new Date(res.registered_at);
+        const expireTime = new Date(registeredAt.getTime() + 24*60*60*1000);
+        startTimer(expireTime);
+        copyBtn.disabled = false;
+      } else {
+        // Нет ключа
+        if(!ref.startsWith(allowedReferrer)){
+          // Показываем popup
+          popup.style.display='flex';
+          goReferral.onclick = () => {
+            window.location.href = allowedReferrer;
+          }
+        } else {
+          keyBox.innerText = "Пройди цепочку, чтобы получить ключ";
+        }
+      }
+    }
+
+    document.getElementById('copyBtn').onclick = ()=>{
+      const key = document.getElementById('key').innerText;
+      navigator.clipboard.writeText(key).then(()=>alert('Ключ скопирован!'));
+    };
+
+    displayKey();
+  </script>
+</body>
+</html>
