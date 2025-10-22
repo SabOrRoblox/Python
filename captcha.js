@@ -60,3 +60,4 @@ class HiddenRecaptcha {
 
 // Создаем глобальный экземпляр
 const hiddenCaptcha = new HiddenRecaptcha('6LcdnvMrAAAAAFtHvaUDHAhAEeEtB1EBubhytj');
+window.hiddenCaptcha = hiddenCaptcha; // 👈 чтобы main.js видел объект
