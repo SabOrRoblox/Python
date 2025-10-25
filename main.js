@@ -737,7 +737,7 @@ app.post('/api/save_user', userValidation, async (req, res) => {
 // ----------------------
 // Static Routes
 // ----------------------
-app.use(express.static(__dirname));
+app.use(express.static('.'));
 
 app.get('/', (req, res) => {
     res.sendFile(path.join(__dirname, 'index.html'));
@@ -746,30 +746,14 @@ app.get('/', (req, res) => {
 app.get('/style.css', (req, res) => {
     res.sendFile(path.join(__dirname, 'style.css'));
 });
-
-// Для админки
-app.get('/user/admin/style1.css', (req, res) => {
-    res.sendFile(path.join(__dirname, 'style1.css'));
-});
-
 app.get('/user/admin', (req, res) => {
-    req.session.permanent = true;
-    if (req.session.admin_authenticated) {
-        return res.sendFile(path.join(__dirname, 'ad_index.html'));
-    }
-    // ... остальной код логина
+  res.sendFile(path.join(__dirname, 'ad_index.html'));
 });
-
-// Админ статические файлы
-app.get('/style1.css', (req, res) => {
-    res.sendFile(path.join(__dirname, 'style1.css'));
-});
-
 // ----------------------
 // Admin Panel
 // ----------------------
 app.route('/user/admin')
-    .get(csrfProtection, (req, res) => {
+    .get((req, res) => {
         req.session.permanent = true;
         if (req.session.admin_authenticated) {
             return res.sendFile(path.join(__dirname, 'ad_index.html'));
