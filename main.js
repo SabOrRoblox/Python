@@ -758,7 +758,7 @@ app.get('/style.css', (req, res) => {
 });
 
 // Админ статические файлы
-app.get('/user/admin/style1.css', (req, res) => {
+app.get('/style1.css', (req, res) => {
     res.sendFile(path.join(__dirname, 'style1.css'));
 });
 
@@ -777,7 +777,7 @@ app.route('/user/admin')
             <html>
             <head>
                 <title>Admin Login</title>
-                <link rel="stylesheet" href="/user/admin/style1.css">
+                <link rel="stylesheet" href="style1.css">
             </head>
             <body>
                 <div class="login-container">
