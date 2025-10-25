@@ -15,8 +15,6 @@ const axios = require('axios');
 const os = require('os');
 const si = require('systeminformation');
 const { body, validationResult, query } = require('express-validator');
-const isIp = require('is-ip');
-const csrf = require('csurf');
 
 require('dotenv').config({ path: '/etc/secrets/.env' });
 
@@ -67,9 +65,6 @@ const ERR_SAVE_KEY = 'Failed to save key';
 // Инициализация приложения
 const app = express();
 const appStartTime = Date.now();
-
-// CSRF protection
-const csrfProtection = csrf({ cookie: true });
 
 // Middleware
 app.use(helmet({
@@ -141,7 +136,8 @@ function validateHwid(hwid) {
 }
 
 function validateIp(ip) {
-  return isIp(ip);
+  const ipRegex = /^(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$|^([0-9a-fA-F]{1,4}:){7}[0-9a-fA-F]{1,4}$/;
+  return ipRegex.test(ip);
 }
 
 function getUserId(ip, hwid) {
