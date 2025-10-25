@@ -1,0 +1,434 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hello, Admin</title>
+    <link rel="stylesheet" href="style1.css">
+</head>
+<body>
+    <div class="admin-container">
+        <header class="admin-header">
+            <h1>Админка</h1>
+            <div class="header-actions">
+                <button class="btn btn-primary" onclick="loadData()">
+                    <span class="btn-icon">🔄</span>
+                    Обновить
+                </button>
+                <button class="btn btn-secondary" onclick="logout()">
+                    <span class="btn-icon">🚪</span>
+                    Выйти
+                </button>
+            </div>
+        </header>
+
+        <!-- Дашборд со статистикой -->
+        <section class="dashboard">
+            <div class="stat-card floating">
+                <div class="stat-label">Всего пользователей</div>
+                <div class="stat-value" id="totalUsers">0</div>
+            </div>
+            <div class="stat-card floating" style="animation-delay: 0.2s;">
+                <div class="stat-label">Пользователей сегодня</div>
+                <div class="stat-value" id="dailyUsers">0</div>
+            </div>
+            <div class="stat-card floating" style="animation-delay: 0.4s;">
+                <div class="stat-label">Проверок ключей</div>
+                <div class="stat-value" id="totalVerifications">0</div>
+            </div>
+            <div class="stat-card floating" style="animation-delay: 0.6s;">
+                <div class="stat-label">API вызовов сегодня</div>
+                <div class="stat-value" id="apiCallsToday">0</div>
+            </div>
+        </section>
+
+        <!-- Основной контент с сайдбаром -->
+        <div class="main-content">
+            <!-- Боковая панель управления -->
+            <aside class="control-panel">
+                <h3>⚙️ Панель управления</h3>
+                <div class="control-buttons">
+                    <button class="btn btn-warning" onclick="cleanOldKeys()">
+                        <span class="btn-icon">🗑️</span>
+                        Очистка ключей
+                    </button>
+                    <button class="btn btn-success" onclick="exportToCSV('keys')">
+                        <span class="btn-icon">📊</span>
+                        Экспорт ключей
+                    </button>
+                    <button class="btn btn-success" onclick="exportToCSV('users')">
+                        <span class="btn-icon">👥</span>
+                        Экспорт пользователей
+                    </button>
+                    <button class="btn btn-primary" onclick="showSystemInfo()">
+                        <span class="btn-icon">💻</span>
+                        Системная информация
+                    </button>
+                    <button class="btn btn-secondary" onclick="clearCache()">
+                        <span class="btn-icon">🧹</span>
+                        Очистить кэш
+                    </button>
+                </div>
+                
+                <!-- Быстрая статистика -->
+                <div class="quick-stats">
+                    <h4>📈 Быстрая статистика</h4>
+                    <div class="quick-stat-item">
+                        <span>Активных ключей:</span>
+                        <span id="activeKeys">0</span>
+                    </div>
+                    <div class="quick-stat-item">
+                        <span>Использованных:</span>
+                        <span id="usedKeys">0</span>
+                    </div>
+                    <div class="quick-stat-item">
+                        <span>Ошибок сегодня:</span>
+                        <span id="errorsToday">0</span>
+                    </div>
+                </div>
+            </aside>
+
+            <!-- Основная область контента -->
+            <main class="content-area">
+                <!-- Ключи -->
+                <section class="data-section">
+                    <h2>🔑 Ключи доступа (<span id="keysCount">0</span>)</h2>
+                    <div class="search-box">
+                        <input type="text" id="keysSearch" placeholder="Поиск по ключам..." onkeyup="searchTable('keysTable', 'keysSearch')">
+                    </div>
+                    <div class="table-container">
+                        <table id="keysTable">
+                            <thead>
+                                <tr>
+                                    <th>Key</th>
+                                    <th>Status</th>
+                                    <th>Created At</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="keysTableBody">
+                                <!-- Данные будут загружены через JavaScript -->
+                            </tbody>
+                        </table>
+                    </div>
+                </section>
+
+                <!-- Пользователи -->
+                <section class="data-section">
+                    <h2>👥 Пользователи системы (<span id="usersCount">0</span>)</h2>
+                    <div class="search-box">
+                        <input type="text" id="usersSearch" placeholder="Поиск по пользователям..." onkeyup="searchTable('usersTable', 'usersSearch')">
+                    </div>
+                    <div class="table-container">
+                        <table id="usersTable">
+                            <thead>
+                                <tr>
+                                    <th>User ID</th>
+                                    <th>HWID</th>
+                                    <th>Cookies</th>
+                                    <th>Key</th>
+                                    <th>Registered At</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="usersTableBody">
+                                <!-- Данные будут загружены через JavaScript -->
+                            </tbody>
+                        </table>
+                    </div>
+                </section>
+            </main>
+        </div>
+    </div>
+
+    <!-- Модальное окно для системной информации -->
+    <div id="systemModal" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <h2>💻 Системная информация</h2>
+            <div class="system-info">
+                <div class="info-item">
+                    <span>Время работы:</span>
+                    <span id="uptime">-</span>
+                </div>
+                <div class="info-item">
+                    <span>Использование памяти:</span>
+                    <span id="memoryUsage">-</span>
+                </div>
+                <div class="info-item">
+                    <span>Статус базы данных:</span>
+                    <span id="dbStatus">-</span>
+                </div>
+                <div class="info-item">
+                    <span>Версия Node.js:</span>
+                    <span id="nodeVersion">-</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let currentData = { keys: [], users: [] };
+
+        // Загрузка данных при старте
+        document.addEventListener('DOMContentLoaded', function() {
+            loadData();
+            setupModal();
+        });
+
+        function setupModal() {
+            const modal = document.getElementById('systemModal');
+            const closeBtn = modal.querySelector('.close');
+            
+            closeBtn.onclick = function() {
+                modal.style.display = 'none';
+            }
+            
+            window.onclick = function(event) {
+                if (event.target == modal) {
+                    modal.style.display = 'none';
+                }
+            }
+        }
+
+        async function loadData() {
+            try {
+                showLoading();
+                const response = await fetch('/api/admin/data');
+                const data = await response.json();
+                
+                if (response.ok) {
+                    currentData = data;
+                    updateUI(data);
+                } else {
+                    showError('Ошибка загрузки данных: ' + data.error);
+                }
+            } catch (error) {
+                showError('Ошибка соединения: ' + error.message);
+            } finally {
+                hideLoading();
+            }
+        }
+
+        function updateUI(data) {
+            // Обновляем статистику
+            document.getElementById('totalUsers').textContent = data.stats.total_users.toLocaleString();
+            document.getElementById('dailyUsers').textContent = data.stats.daily_users.toLocaleString();
+            document.getElementById('totalVerifications').textContent = data.stats.total_verifications.toLocaleString();
+            document.getElementById('apiCallsToday').textContent = data.stats.api_calls_today.toLocaleString();
+            
+            // Быстрая статистика
+            const activeKeys = data.keys.filter(k => !k.used).length;
+            const usedKeys = data.keys.filter(k => k.used).length;
+            document.getElementById('activeKeys').textContent = activeKeys;
+            document.getElementById('usedKeys').textContent = usedKeys;
+            document.getElementById('errorsToday').textContent = data.stats.recent_errors?.length || 0;
+            
+            // Обновляем таблицу ключей
+            document.getElementById('keysCount').textContent = data.keys.length.toLocaleString();
+            const keysBody = document.getElementById('keysTableBody');
+            keysBody.innerHTML = data.keys.map(key => `
+                <tr>
+                    <td><code>${escapeHtml(key.key)}</code></td>
+                    <td><span class="${key.used ? 'status-inactive' : 'status-active'}">${key.used ? 'USED' : 'ACTIVE'}</span></td>
+                    <td>${formatDate(key.created_at)}</td>
+                    <td>
+                        <button class="btn btn-danger btn-small" onclick="deleteKey('${escapeHtml(key.key)}')">
+                            🗑️ Delete
+                        </button>
+                    </td>
+                </tr>
+            `).join('');
+
+            // Обновляем таблицу пользователей
+            document.getElementById('usersCount').textContent = data.users.length.toLocaleString();
+            const usersBody = document.getElementById('usersTableBody');
+            usersBody.innerHTML = data.users.map(user => `
+                <tr>
+                    <td><code>${escapeHtml(user.user_id)}</code></td>
+                    <td><code>${escapeHtml(user.hwid)}</code></td>
+                    <td title="${escapeHtml(user.cookies || '')}">${escapeHtml((user.cookies || '').substring(0, 30))}...</td>
+                    <td><code>${escapeHtml(user.key)}</code></td>
+                    <td>${formatDate(user.registered_at)}</td>
+                    <td>
+                        <button class="btn btn-danger btn-small" onclick="deleteUser('${escapeHtml(user.hwid)}')">
+                            🗑️ Delete
+                        </button>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        async function deleteKey(key) {
+            if (confirm(`Удалить ключ:\n${key}`)) {
+                try {
+                    const response = await fetch('/api/delete_key', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({ key: key })
+                    });
+                    
+                    const result = await response.text();
+                    showSuccess(result);
+                    loadData();
+                } catch (error) {
+                    showError('Ошибка: ' + error.message);
+                }
+            }
+        }
+
+        async function deleteUser(hwid) {
+            if (confirm(`Удалить пользователя с HWID:\n${hwid}`)) {
+                try {
+                    const response = await fetch('/api/delete_user', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({ hwid: hwid })
+                    });
+                    
+                    const result = await response.text();
+                    showSuccess(result);
+                    loadData();
+                } catch (error) {
+                    showError('Ошибка: ' + error.message);
+                }
+            }
+        }
+
+        async function cleanOldKeys() {
+            let days = prompt("Удалить ключи старше (дней):", "1"); 
+            if (!days || isNaN(days)) return;
+            
+            try {
+                const response = await fetch('/api/clean_old_keys', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ days: parseInt(days) })
+                });
+                
+                const data = await response.json();
+                showSuccess(`Удалено ключей: ${data.deleted}`);
+                loadData();
+            } catch (error) {
+                showError('Ошибка: ' + error.message);
+            }
+        }
+
+        async function showSystemInfo() {
+            try {
+                const response = await fetch('/api/health');
+                const data = await response.json();
+                
+                document.getElementById('uptime').textContent = Math.floor(data.uptime / 60) + ' мин';
+                document.getElementById('memoryUsage').textContent = data.memory_usage;
+                document.getElementById('dbStatus').textContent = data.database.toUpperCase();
+                document.getElementById('nodeVersion').textContent = process.versions?.node || 'N/A';
+                
+                document.getElementById('systemModal').style.display = 'block';
+            } catch (error) {
+                showError('Ошибка загрузки системной информации');
+            }
+        }
+
+        function searchTable(tableId, inputId) {
+            const input = document.getElementById(inputId);
+            const filter = input.value.toLowerCase();
+            const table = document.getElementById(tableId);
+            const tr = table.getElementsByTagName("tr");
+            
+            for (let i = 1; i < tr.length; i++) {
+                const td = tr[i].getElementsByTagName("td");
+                let show = false;
+                for (let j = 0; j < td.length; j++) {
+                    if (td[j].textContent.toLowerCase().includes(filter)) {
+                        show = true;
+                        break;
+                    }
+                }
+                tr[i].style.display = show ? "" : "none";
+            }
+        }
+
+        function exportToCSV(type) {
+            const data = type === 'keys' ? currentData.keys : currentData.users;
+            const filename = type === 'keys' ? 'keys_export.csv' : 'users_export.csv';
+            
+            let csv = [];
+            if (type === 'keys') {
+                csv.push(['Key', 'Used', 'Created At']);
+                data.forEach(item => {
+                    csv.push([item.key, item.used, item.created_at]);
+                });
+            } else {
+                csv.push(['User ID', 'HWID', 'Cookies', 'Key', 'Registered At']);
+                data.forEach(item => {
+                    csv.push([item.user_id, item.hwid, item.cookies, item.key, item.registered_at]);
+                });
+            }
+            
+            const csvContent = csv.map(row => row.map(field => `"${field}"`).join(',')).join('\n');
+            const blob = new Blob([csvContent], { type: 'text/csv' });
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = filename;
+            a.click();
+            window.URL.revokeObjectURL(url);
+            
+            showSuccess(`Экспорт ${type === 'keys' ? 'ключей' : 'пользователей'} завершен!`);
+        }
+
+        function clearCache() {
+            if (confirm('Очистить кэш системы?')) {
+                showSuccess('Кэш очищен!');
+                loadData();
+            }
+        }
+
+        function logout() {
+            if (confirm('Выйти из админ панели?')) {
+                window.location.href = '/user/admin?logout=true';
+            }
+        }
+
+        // Вспомогательные функции
+        function escapeHtml(unsafe) {
+            return unsafe
+                .replace(/&/g, "&amp;")
+                .replace(/</g, "&lt;")
+                .replace(/>/g, "&gt;")
+                .replace(/"/g, "&quot;")
+                .replace(/'/g, "&#039;");
+        }
+
+        function formatDate(dateString) {
+            return new Date(dateString).toLocaleString('ru-RU');
+        }
+
+        function showLoading() {
+            // Можно добавить индикатор загрузки
+        }
+
+        function hideLoading() {
+            // Скрыть индикатор загрузки
+        }
+
+        function showSuccess(message) {
+            alert('✅ ' + message);
+        }
+
+        function showError(message) {
+            alert('❌ ' + message);
+        }
+
+        // Глобальные переменные для системной информации
+        const process = { versions: { node: '18.0.0' } }; // Заглушка
+    </script>
+</body>
+  </html>
