@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Hello, Admin</title>
+    <title>Админка</title>
     <link rel="stylesheet" href="style1.css">
 </head>
 <body>
@@ -42,7 +42,7 @@
             </div>
         </section>
 
-        <!-- Основной контент с сайдбаром -->
+        <!-- Основной контент -->
         <div class="main-content">
             <!-- Боковая панель управления -->
             <aside class="control-panel">
@@ -60,14 +60,6 @@
                         <span class="btn-icon">👥</span>
                         Экспорт пользователей
                     </button>
-                    <button class="btn btn-primary" onclick="showSystemInfo()">
-                        <span class="btn-icon">💻</span>
-                        Системная информация
-                    </button>
-                    <button class="btn btn-secondary" onclick="clearCache()">
-                        <span class="btn-icon">🧹</span>
-                        Очистить кэш
-                    </button>
                 </div>
                 
                 <!-- Быстрая статистика -->
@@ -80,10 +72,6 @@
                     <div class="quick-stat-item">
                         <span>Использованных:</span>
                         <span id="usedKeys">0</span>
-                    </div>
-                    <div class="quick-stat-item">
-                        <span>Ошибок сегодня:</span>
-                        <span id="errorsToday">0</span>
                     </div>
                 </div>
             </aside>
@@ -125,7 +113,6 @@
                                 <tr>
                                     <th>User ID</th>
                                     <th>HWID</th>
-                                    <th>Cookies</th>
                                     <th>Key</th>
                                     <th>Registered At</th>
                                     <th>Actions</th>
@@ -141,59 +128,16 @@
         </div>
     </div>
 
-    <!-- Модальное окно для системной информации -->
-    <div id="systemModal" class="modal">
-        <div class="modal-content">
-            <span class="close">&times;</span>
-            <h2>💻 Системная информация</h2>
-            <div class="system-info">
-                <div class="info-item">
-                    <span>Время работы:</span>
-                    <span id="uptime">-</span>
-                </div>
-                <div class="info-item">
-                    <span>Использование памяти:</span>
-                    <span id="memoryUsage">-</span>
-                </div>
-                <div class="info-item">
-                    <span>Статус базы данных:</span>
-                    <span id="dbStatus">-</span>
-                </div>
-                <div class="info-item">
-                    <span>Версия Node.js:</span>
-                    <span id="nodeVersion">-</span>
-                </div>
-            </div>
-        </div>
-    </div>
-
     <script>
         let currentData = { keys: [], users: [] };
 
         // Загрузка данных при старте
         document.addEventListener('DOMContentLoaded', function() {
             loadData();
-            setupModal();
         });
-
-        function setupModal() {
-            const modal = document.getElementById('systemModal');
-            const closeBtn = modal.querySelector('.close');
-            
-            closeBtn.onclick = function() {
-                modal.style.display = 'none';
-            }
-            
-            window.onclick = function(event) {
-                if (event.target == modal) {
-                    modal.style.display = 'none';
-                }
-            }
-        }
 
         async function loadData() {
             try {
-                showLoading();
                 const response = await fetch('/api/admin/data');
                 const data = await response.json();
                 
@@ -205,8 +149,6 @@
                 }
             } catch (error) {
                 showError('Ошибка соединения: ' + error.message);
-            } finally {
-                hideLoading();
             }
         }
 
@@ -222,7 +164,6 @@
             const usedKeys = data.keys.filter(k => k.used).length;
             document.getElementById('activeKeys').textContent = activeKeys;
             document.getElementById('usedKeys').textContent = usedKeys;
-            document.getElementById('errorsToday').textContent = data.stats.recent_errors?.length || 0;
             
             // Обновляем таблицу ключей
             document.getElementById('keysCount').textContent = data.keys.length.toLocaleString();
@@ -247,7 +188,6 @@
                 <tr>
                     <td><code>${escapeHtml(user.user_id)}</code></td>
                     <td><code>${escapeHtml(user.hwid)}</code></td>
-                    <td title="${escapeHtml(user.cookies || '')}">${escapeHtml((user.cookies || '').substring(0, 30))}...</td>
                     <td><code>${escapeHtml(user.key)}</code></td>
                     <td>${formatDate(user.registered_at)}</td>
                     <td>
@@ -320,22 +260,6 @@
             }
         }
 
-        async function showSystemInfo() {
-            try {
-                const response = await fetch('/api/health');
-                const data = await response.json();
-                
-                document.getElementById('uptime').textContent = Math.floor(data.uptime / 60) + ' мин';
-                document.getElementById('memoryUsage').textContent = data.memory_usage;
-                document.getElementById('dbStatus').textContent = data.database.toUpperCase();
-                document.getElementById('nodeVersion').textContent = process.versions?.node || 'N/A';
-                
-                document.getElementById('systemModal').style.display = 'block';
-            } catch (error) {
-                showError('Ошибка загрузки системной информации');
-            }
-        }
-
         function searchTable(tableId, inputId) {
             const input = document.getElementById(inputId);
             const filter = input.value.toLowerCase();
@@ -366,9 +290,9 @@
                     csv.push([item.key, item.used, item.created_at]);
                 });
             } else {
-                csv.push(['User ID', 'HWID', 'Cookies', 'Key', 'Registered At']);
+                csv.push(['User ID', 'HWID', 'Key', 'Registered At']);
                 data.forEach(item => {
-                    csv.push([item.user_id, item.hwid, item.cookies, item.key, item.registered_at]);
+                    csv.push([item.user_id, item.hwid, item.key, item.registered_at]);
                 });
             }
             
@@ -382,13 +306,6 @@
             window.URL.revokeObjectURL(url);
             
             showSuccess(`Экспорт ${type === 'keys' ? 'ключей' : 'пользователей'} завершен!`);
-        }
-
-        function clearCache() {
-            if (confirm('Очистить кэш системы?')) {
-                showSuccess('Кэш очищен!');
-                loadData();
-            }
         }
 
         function logout() {
@@ -411,14 +328,6 @@
             return new Date(dateString).toLocaleString('ru-RU');
         }
 
-        function showLoading() {
-            // Можно добавить индикатор загрузки
-        }
-
-        function hideLoading() {
-            // Скрыть индикатор загрузки
-        }
-
         function showSuccess(message) {
             alert('✅ ' + message);
         }
@@ -426,9 +335,6 @@
         function showError(message) {
             alert('❌ ' + message);
         }
-
-        // Глобальные переменные для системной информации
-        const process = { versions: { node: '18.0.0' } }; // Заглушка
     </script>
 </body>
-  </html>
+</html>
