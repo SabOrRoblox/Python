@@ -1000,7 +1000,7 @@ app.use((err: any, req: Request, res: Response, next: NextFunction) => {
 // ----------------------
 // Запуск приложения
 // ----------------------
-const PORT = process.env.PORT || 5000;
+const PORT = process.env.PORT ? parseInt(process.env.PORT) : 5000;
 
 // Создаем папку для бэкапов при старте
 if (!fs.existsSync('backups')) {
