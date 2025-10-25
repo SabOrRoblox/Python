@@ -1,31 +1,29 @@
 {
-  "name": "key-system",
+  "name": "apex-key-system",
   "version": "1.0.0",
+  "description": "Key verification system with admin panel",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node server.js"
   },
   "dependencies": {
     "express": "^4.18.2",
+    "express-rate-limit": "^6.7.0",
+    "helmet": "^6.0.1",
     "cors": "^2.8.5",
-    "helmet": "^7.1.0", 
-    "express-rate-limit": "^7.1.5",
     "cookie-parser": "^1.4.6",
     "express-session": "^1.17.3",
     "node-cache": "^5.1.2",
-    "@supabase/supabase-js": "^2.38.0",
-    "axios": "^1.6.2",
-    "systeminformation": "^5.21.22",
-    "express-validator": "^7.0.1",
-    "dotenv": "^16.3.1",
-    "pino": "^8.16.1",
-    "pino-pretty": "^10.2.3"
-  },
-  "devDependencies": {
-    "@types/express": "^4.17.21",
-    "@types/cors": "^2.8.17",
-    "@types/cookie-parser": "^1.4.6",
-    "@types/express-session": "^1.17.9",
-    "@types/node": "^20.10.0",
+    "@supabase/supabase-js": "^2.21.0",
+    "axios": "^1.4.0",
+    "systeminformation": "^5.11.15",
+    "express-validator": "^6.14.3",
+    "dotenv": "^16.0.3",
+    "pino": "^8.8.0",
+    "pino-pretty": "^9.4.0"
   },
   "engines": {
-    "node": ">=20.0.0"
+    "node": ">=14.0.0"
   }
 }
