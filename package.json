@@ -1,34 +1,27 @@
 {
-  "name": "apex-key-system",
-  "version": "1.0.0",
-  "description": "Key system backend with Supabase and admin panel",
-  "main": "index.js",
-  "scripts": {
-    "start": "node index.js",
-    "dev": "nodemon index.js"
-  },
+  "name": "key-system",
+  "type": "module",
   "dependencies": {
-    "@supabase/supabase-js": "^2.34.0",
-    "axios": "^1.6.0",
-    "cookie-parser": "^1.4.6",
-    "cors": "^2.8.5",
-    "csurf": "^1.11.0",
     "express": "^4.18.2",
-    "express-rate-limit": "^7.1.0",
+    "cors": "^2.8.5", 
+    "helmet": "^7.1.0",
+    "express-rate-limit": "^7.1.5",
+    "cookie-parser": "^1.4.6",
     "express-session": "^1.17.3",
-    "express-validator": "^7.0.1",
-    "helmet": "^7.0.0",
-    "is-ip": "^4.0.0",
     "node-cache": "^5.1.2",
-    "pino": "^8.16.0",
-    "pino-pretty": "^10.1.0",
-    "systeminformation": "^5.13.0",
-    "dotenv": "^16.3.1"
+    "@supabase/supabase-js": "^2.38.0",
+    "axios": "^1.6.2",
+    "systeminformation": "^5.21.22",
+    "express-validator": "^7.0.1",
+    "dotenv": "^16.3.1",
+    "pino": "^8.16.1",
+    "pino-pretty": "^10.2.3"
   },
   "devDependencies": {
-    "nodemon": "^3.0.2"
+    "typescript": "^5.3.3",
+    "tsx": "^4.6.2"
   },
-  "engines": {
-    "node": ">=18.0.0"
+  "scripts": {
+    "start": "tsx main.ts"
   }
 }
