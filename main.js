@@ -394,10 +394,76 @@ async function saveKey(key = null) {
 // Middleware для админки
 // ----------------------
 function requireAdmin(req, res, next) {
-  const secret = req.query.d;
-  if (secret === SECRET_KEY || req.session.admin_authenticated) {
+  // Проверяем сессию ИЛИ секретный ключ через query параметр
+  if (req.session.admin_authenticated || req.query.d === SECRET_KEY) {
     return next();
   }
+  
+  // Если нет доступа, показываем форму логина
+  if (req.method === 'GET' && !req.query.d) {
+    return res.send(`
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <title>Admin Login</title>
+        <style>
+          body { 
+            font-family: Arial; 
+            background: #1a1a1a; 
+            color: white; 
+            display: flex; 
+            justify-content: center; 
+            align-items: center; 
+            height: 100vh;
+            margin: 0;
+          }
+          .login-form { 
+            background: #2d2d2d; 
+            padding: 30px; 
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+          }
+          input { 
+            padding: 12px; 
+            margin: 10px 0; 
+            width: 250px; 
+            border: 1px solid #444;
+            border-radius: 4px;
+            background: #1a1a1a;
+            color: white;
+          }
+          button { 
+            padding: 12px 20px; 
+            background: #007bff; 
+            color: white; 
+            border: none; 
+            border-radius: 4px; 
+            cursor: pointer;
+            width: 100%;
+            margin-top: 10px;
+          }
+          button:hover {
+            background: #0056b3;
+          }
+          h2 {
+            text-align: center;
+            margin-bottom: 20px;
+          }
+        </style>
+      </head>
+      <body>
+        <div class="login-form">
+          <h2>Admin Login</h2>
+          <form method="POST" action="/user/admin">
+            <input type="password" name="passwrd" placeholder="Password" required>
+            <button type="submit">Login</button>
+          </form>
+        </div>
+      </body>
+      </html>
+    `);
+  }
+  
   return res.status(403).send("Ur not admin!");
 }
 
@@ -738,13 +804,13 @@ app.get('/style.css', (req, res) => {
   res.sendFile(path.join(__dirname, 'style.css'));
 });
 
-app.get('/user/admin', (req, res) => {
+// ----------------------
+// Admin Panel Routes
+// ----------------------
+app.get('/user/admin', requireAdmin, (req, res) => {
   res.sendFile(path.join(__dirname, 'ad_index.html'));
 });
 
-// ----------------------
-// Admin Panel
-// ----------------------
 app.post('/user/admin', [
   body('passwrd').isLength({ min: 1 }).withMessage('Password required')
 ], async (req, res) => {
@@ -880,6 +946,17 @@ app.post('/api/delete_user', requireAdmin, [
     logger.error(`Delete user error: ${error.message}`);  
     res.status(500).send(ERR_DB_FAIL);  
   }
+});
+
+// Выход из админки
+app.post('/user/admin/logout', requireAdmin, (req, res) => {
+  req.session.destroy((err) => {
+    if (err) {
+      logger.error('Logout error:', err);
+      return res.status(500).send('Logout failed');
+    }
+    res.redirect('/user/admin');
+  });
 });
 
 // Обработчик ошибок
