@@ -15,7 +15,6 @@ const axios = require('axios');
 const os = require('os');
 const si = require('systeminformation');
 const { body, validationResult, query } = require('express-validator');
-const csrf = require('csurf');
 const isIp = require('is-ip');
 
 require('dotenv').config({ path: '/etc/secrets/.env' });
@@ -67,15 +66,6 @@ const ERR_SAVE_KEY = 'Failed to save key';
 // Инициализация приложения
 const app = express();
 const appStartTime = Date.now();
-
-// CSRF защита
-const csrfProtection = csrf({ 
-  cookie: {
-    httpOnly: true,
-    secure: true,
-    sameSite: 'lax'
-  }
-});
 
 // Middleware
 app.use(helmet({
