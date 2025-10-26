@@ -68,7 +68,7 @@ const appStartTime = Date.now();
 
 // Middleware
 app.use(helmet({
-  contentSecurityPolicy: false // Отключаем CSP для упрощения
+  contentSecurityPolicy: true // Отключаем CSP для упрощения
 }));
 
 app.use(cors({
