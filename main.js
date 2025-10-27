@@ -69,7 +69,7 @@ const appStartTime = Date.now();
 // Middleware
 app.use(helmet({
   contentSecurityPolicy: false
-});
+}));
 
 app.use(cors({
   origin: ["https://www.roblox.com", "https://*.robloxlabs.com"],
