@@ -68,30 +68,8 @@ const appStartTime = Date.now();
 
 // Middleware
 app.use(helmet({
-  contentSecurityPolicy: {
-    directives: {
-      defaultSrc: ["'self'"],
-      scriptSrc: ["'self'"],
-      styleSrc: ["'self'", "'unsafe-inline'"],
-      imgSrc: ["'self'", "data:", "https:"],
-      fontSrc: ["'self'"],
-      connectSrc: ["'self'"],
-      frameSrc: ["'none'"],
-      objectSrc: ["'none'"]
-    }
-  },
-  hsts: {
-    maxAge: 31536000,
-    includeSubDomains: true,
-    preload: true
-  },
-  noSniff: true,
-  ieNoOpen: true,
-  hidePoweredBy: true,
-  crossOriginOpenerPolicy: { policy: "same-origin" },
-  crossOriginResourcePolicy: { policy: "same-site" },
-  referrerPolicy: { policy: "strict-origin-when-cross-origin" }
-}));
+  contentSecurityPolicy: false
+});
 
 app.use(cors({
   origin: ["https://www.roblox.com", "https://*.robloxlabs.com"],
